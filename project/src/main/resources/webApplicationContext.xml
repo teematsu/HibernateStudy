@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+ 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+          http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+          http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+">
+
+    <!--    
+    <context:component-scan base-package="samplepkg.web.init" />
+    -->
+
+    <!-- JPAの設定  -->
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <!-- persistence-unitのnameを指定。指定省略時は"default" -->
+        <!--<property name="persistenceUnitName" value="default"/>-->
+        
+        <!-- JPAのEntityとして使うクラスを自動検出する際の、検索先のパッケージを指定。
+             指定されたパッケージとその配下のパッケージが検索される。
+             persistence.xml を利用する場合は無視されているかもしれない・・・。 -->
+        <property name="packagesToScan" value="hibernatestudy" />
+        
+        <!-- persistence.xmlの場所 -->
+        <!--<property name="persistenceXmlLocation" value="classpath:/META-INF/persistence.xml" />-->
+        
+        <property name="dataSource">
+            <bean class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+                <property name="driverClassName" value="org.postgresql.Driver" />
+                <property name="url" value="jdbc:postgresql://localhost:5432/hibernatestudy_db" />
+                <property name="username" value="pgsql" />
+                <property name="password" value="" />
+            </bean>
+        </property> 
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+        </property>
+        <property name="jpaProperties">
+            <props>
+                <!-- dataSourceの定義を省略した場合は、代わりにここでデータベースの情報を設定
+                <prop key="javax.persistence.jdbc.url">jdbc:postgresql://localhost:5432/samplepkg_db</prop>
+                <prop key="javax.persistence.jdbc.user">pgsql</prop>
+                <prop key="javax.persistence.jdbc.password"></prop>
+                <prop key="javax.persistence.jdbc.driver">org.postgresql.Driver</prop>
+                -->
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop> <!-- キャッシュなしでよいのか？ -->
+                <prop key="hibernate.id.new_generator_mappings">true</prop> <!-- @GeneratedValue のid生成方式に新方式を利用。-->
+
+                <!-- 特定DBに特化したSQLを生成するための指定。org.hibernate.dialect.Dialectのサブクラスから選択。 
+                     指定しない場合は自動判定。
+                     クラス一覧は以下を参照。
+                     http://docs.jboss.org/hibernate/orm/4.3/javadocs/org/hibernate/dialect/package-summary.html
+                -->
+                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL9Dialect</prop>
+                
+                <!-- DBにテーブルを作成するかどうか。 See. http://docs.jboss.org/hibernate/orm/4.3/manual/en-US/html/ch03.html#configuration-misc-properties -->
+                <prop key="hibernate.hbm2ddl.auto">create-drop</prop>        <!-- テーブルを削除して作り直す。 -->
+                <!--<prop key="hibernate.hbm2ddl.auto">update</prop>-->      <!-- 必要ならテーブルを更新する。 -->
+                <!--<prop key="hibernate.hbm2ddl.auto">validate</prop>-->    <!-- テーブルの作成・更新は行わず、検証のみ実施する。 -->
+                
+                <!-- 調査用のログ -->
+                <!--<prop key="hibernate.show_sql">true</prop>-->            <!-- SQLをログに出力する → log4j.properties で指定。 -->
+                <!--<prop key="hibernate.use_sql_comments">true</prop>-->    <!-- そのSQLにコメントを付ける -->
+                <prop key="hibernate.format_sql">true</prop>                 <!-- ログに出力するログをフォーマットする -->
+             </props>
+        </property>
+                        
+        <!-- JDBCコネクションプーリングは、JPA実装(=Hibernate)の機能を使うことに
+             なると思われる。プーリングを利用するには、persistence.xmlでの設定が必要。
+             http://docs.jboss.org/hibernate/orm/4.3/manual/en-US/html/ch03.html#configuration-hibernatejdbc -->
+    </bean>
+        
+    <!--
+    <task:annotation-driven scheduler="myScheduler"  />
+    <task:scheduler id="myScheduler" pool-size="1"/>
+    -->
+
+</beans>

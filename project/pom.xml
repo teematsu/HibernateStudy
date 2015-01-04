@@ -1,0 +1,293 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>my-study</groupId>
+    <artifactId>HibernateStudy</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>HibernateStudy</name>
+
+    <properties>
+        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <resources>
+            <!-- 各環境に共通のリソースファイルのソースディレクトリ -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                    <compilerArguments>
+                        <endorseddirs>${endorsed.dir}</endorseddirs>
+                    </compilerArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <!--<failOnMissingWebXml>false</failOnMissingWebXml>-->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${endorsed.dir}</outputDirectory>
+                            <silent>true</silent>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>javax</groupId>
+                                    <artifactId>javaee-endorsed-api</artifactId>
+                                    <version>6.0</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.17</version>
+                <configuration>
+                  <argLine>
+                    <!-- テスト起動時に spring-instrument-*.jar を組み込む。
+                         jarのパスは、実際にdependencyタグで指定した spring-instrument のバージョンにあわせる -->
+                    -javaagent:${settings.localRepository}/org/springframework/spring-instrument/4.1.0.RELEASE/spring-instrument-4.1.0.RELEASE.jar
+                  </argLine>
+                </configuration>
+            </plugin>            
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5432/hibernate_study_db</url>
+                    <user>pgsql</user>
+                    <password></password>
+                    <locations>
+                        <location>classpath:db/migration</location>
+                    </locations>
+                </configuration>
+            </plugin>            
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.14.6</version>
+        </dependency>
+        <!-- Servlet 3.0 API。Tomcat 7.xがサポートする Servlet のバージョンに合わせた。 -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- JSF 2.2 APIおよび実装(Mojarra) --> 
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.faces</artifactId>
+            <version>2.2.8</version>
+        </dependency>
+        <!-- PrimeFaces 5.0 -->
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>5.0</version>
+        </dependency>
+        <!-- Spring framework 4.1 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>4.1.0.RELEASE</version>
+            <exclusions>
+                <!-- slf4jへ置き換えるため、commons-logging を依存関係から除去する。 -->
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Spring framework 4.0 (Webアプリ用) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>4.1.0.RELEASE</version>
+        </dependency>
+        <!-- Bean Validation 1.1 APIおよび実装 (Hibernate Validator) -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>5.0.3.Final</version>
+        </dependency>
+        <!-- Spring Framework での AspectJ サポート (LoadTimeWeaverの利用に必要) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+            <version>4.1.0.RELEASE</version>
+        </dependency>
+        <!-- AspectJ (LoadTimeWeaverの利用に必要) -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.7.4</version>
+        </dependency>
+        <!-- SLF4J (ログAPI) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <!-- commons-logging API のSLF4Jによる代替実装 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.7</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- java.util.logging用の、SLF4Jへ全転送するHandler (有効にするにはlogging.propertiesの定義が必要。) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.7</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- SLF4J から log4jへの転送 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.7</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- log4j -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- JPA 2.1 APIおよび実装 (Hibernate) -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>4.3.6.Final</version>
+        </dependency>
+        <!-- SpringでのJPAサポート -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>4.1.0.RELEASE</version>
+        </dependency>
+        <!-- メモリ内で動くデータベース -->
+<!--        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.3.174</version>
+        </dependency>-->
+        <!-- PostgreSQL JDBCドライバー (JDBC 41) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.3-1101-jdbc41</version>
+        </dependency>
+
+        <!-- jUnit -->        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Spring test --> 
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>4.1.0.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- LoadTimeWeaverを使ったアプリをJUnitでテストするときに必要。 
+            取得したJARのパスとファイル名は、後述の maven-surefire-plugin の argLine に記述する必要がある。 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-instrument</artifactId>
+            <version>4.1.0.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- H2 Database。 テスト時にインメモリなデータベースとして使う -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.181</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <!-- 稼動環境別の設定 -->
+    <profiles>
+        <!-- 開発環境用 (デフォルトでこの設定が適用される。) -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <resources>
+                    <!-- 環境毎に内容が異なるリソースファイルのソースディレクトリ -->
+                    <resource>
+                        <directory>src/dev/resources</directory>
+                    </resource>
+                    <!-- src/main/resourcesとsrc/dev/resourcesで、
+                    同じ名前のファイルをこれら2つのソースディレクトリ両方に入れてはならない。
+                    どちらが残る(上書きされる)かは、タイムスタンプに依存するため。 -->
+                </resources>
+            </build>
+        </profile>
+
+        <!-- 本番環境用
+        (mvn -P production ... で適用される。)
+        (NetBeansでは プロジェクト右クリック-構成を設定-production ) -->
+        <profile>
+            <id>production</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/production/resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
+    
+</project>

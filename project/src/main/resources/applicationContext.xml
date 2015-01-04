@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+ 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+          http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+          http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+">
+    
+    <!-- LoadTimeWeaverを有効にする。 
+         @Transactional に必要。
+         (Spring Framework マニュアル 4.15 Registering a LoadTimeWeaver) -->
+    <context:load-time-weaver/>
+    
+    <!-- Spring の設定は、XMLを主とする。
+         必要な場合は Java-based configuration も併用できるようにする。
+         (Spring Framework マニュアル 4.12.5 Composing Java-based configurations / XML-centric use of @Configuration classes ) -->
+    <context:annotation-config/> <!-- @Autowired や @Configuration などのアノテーション指定を有効にする。 -->
+    
+    <!-- Springに探索させるパッケージを指定。このパッケージ配下のクラスについては、
+         @Autowiredなどのアノテーションが有効になる。 -->
+    <context:component-scan base-package="hibernatestudy" scoped-proxy="targetClass" />
+
+    <!-- propertiesファイルをロードし、@Valueなどで、${...}形式で参照できるようにする。 
+         2つのpropertiesファイルを読み込むが、両方で同じプロパティが定義されている場合は後のファイルのものが優先される。 -->
+    <!--<context:property-placeholder location="classpath:config_default.properties,classpath:config_custom.properties" />-->
+    <!-- 以下は、上記の context:property-placeholder と同等の記述。
+         以下の場合は、PropertiesオブジェクトがconfigPropertiesという名前で登録されるため、
+         JSF側からも #{configProperties['foo.bar']} というようなEL式でプロパティを参照できるようになる。
+    -->
+    <context:property-placeholder properties-ref="configProperties" />
+    <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:/config_default.properties</value>
+                <value>classpath:/config_custom.properties</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 独自のスコープ "view" を追加する -->
+    <bean class="org.springframework.beans.factory.config.CustomScopeConfigurer">
+        <property name="scopes">
+            <map>
+                <entry key="view">
+                    <bean class="hibernatestudy.spring.scope.ViewScope"/>
+                </entry>
+            </map>
+        </property>
+    </bean>
+        
+    <!-- JPAの設定 
+         → テスト時は設定を変更したいため、ここには記述せず、webApplicationContext.xml に記述 
+    -->
+    
+    <!-- @Transactional を利用するのに必要な設定 -->
+    <tx:annotation-driven mode="aspectj" transaction-manager="transactionManager" />
+        <!-- @Transactionalを利用可能にする。
+             http://docs.spring.io/spring/docs/4.0.2.RELEASE/spring-framework-reference/htmlsingle/#transaction-declarative-annotations
+             mode="aspectj" は、@Transationalの実現方法としてload-time weavingを選択。
+             @Transactionのついたメソッドを同じクラスから呼んだ場合に機能させるには必要。
+             Consider the use of AspectJ mode (see mode attribute in table below) if you expect self-invocations to be wrapped with transactions as well.  -->
+
+    <!-- トランザクション管理方法の設定
+         JPAを使うときは、JpaTransactionManager を使うのが標準的なようだ。
+         他にも、DataSourceTransactionManagerなどがあるようだが・・・ 
+           JpaTransactionManager
+             http://docs.spring.io/spring/docs/4.0.0.RELEASE/spring-framework-reference/htmlsingle/#orm-jpa-tx
+           DataSourceTransactionManager
+             http://docs.spring.io/spring/docs/4.0.0.RELEASE/spring-framework-reference/htmlsingle/#jdbc-DataSourceTransactionManager
+    -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <!-- JpaTransactionManagerはコンストラクタで明示的にEntityManagerFactoryをとることもできるが、
+             そうしなくても動作するようだ。
+             以下のQuickstartでは、引数なしのコンストラクタを使用している。
+                http://spring.io/guides/gs/accessing-data-jpa/#_create_an_application_class
+             一方、コンストラクタにEntityManagerFactoryを指定している例もある。
+                http://docs.spring.io/spring-data/jpa/docs/1.5.0.M1/reference/html/jpa.repositories.html#d0e1363
+        -->
+    </bean>
+    
+    <!-- Java-based configuration を併用する場合で、そのクラスが context:component-scan で
+         指定されたパッケージに含まれない場合は、そのクラスを指定。 -->
+    <!--<bean class="samplepkg.MySpringConfiguration"/> -->
+ 
+    <!--    
+    <aop:config proxy-target-class="true">
+         other beans defined here... 
+    </aop:config>
+    -->
+</beans>

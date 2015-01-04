@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiJARLocking="true" path="/HibernateStudy">
+    <!-- Tomcat 6以降利用時に、SpringのLoadTimeWeaverを有効にするために必要な設定。
+         1. 以下の設定でクラスローダーを変更し、
+         2. $CATALINA_HOME/lib に spring-instrument-tomcat-<version>.jar をコピー
+         参照
+           http://docs.spring.io/spring/docs/4.0.2.RELEASE/spring-framework-reference/htmlsingle/
+           8.8.4 Load-time weaving with AspectJ in the Spring Framework
+             Tomcat
+    -->
+    <Loader loaderClass="org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader"/>
+</Context>

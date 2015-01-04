@@ -1,0 +1,18 @@
+<!DOCTYPE aspectj PUBLIC "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
+<aspectj>
+    <weaver options="-verbose -showWeaveInfo">
+        <!-- optionsの一覧は以下を参照。
+             http://eclipse.org/aspectj/doc/released/devguide/ltw-configuration.html 
+        -->
+        <!-- 以下の指定がないと、アプリに組み込んだライブラリに対してもweavingを実行しようとするようだ。
+             たとえば次のようなメッセージがログに記録される。
+             [TomcatInstrumentableClassLoader@696edf9d] error can't determine implemented interfaces of missing type 
+             groovy.util.GroovyScriptEngine when weaving type com.sun.faces.scripting.groovy.GroovyHelperImpl$MojarraGroovyClassLoader
+             回避のため、アプリのクラスだけがweavingの対象となるよう明示的に指定する。
+        -->
+        <include within="hibernatestudy..*"/> 
+        <!-- foo..* で、指定のパッケージとその子孫のパッケージのクラスが対象となる。 
+             foo.* の場合は、指定のパッケージ内のクラスだけとなる。
+        -->
+    </weaver>
+</aspectj>

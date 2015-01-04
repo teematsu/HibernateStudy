@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+    <!-- JSF -->
+    <context-param>
+        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-value>Development</param-value>
+    </context-param>
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>/faces/*</url-pattern>
+    </servlet-mapping>
+    <!-- Bean Validation -->
+    <listener>
+        <listener-class>hibernatestudy.web.MyServletContextListener</listener-class>
+    </listener>
+    <!-- Spring Framework -->
+    <!-- 
+         Springの設定は、XMLとJava Config(@Configuration)を併用し、XMLを主とする。
+         XMLを使わずJava Configだけを使った場合、後述の問題があったため、併用することにした。
+         設定のXMLファイルは /WEB-INF/applicationContext.xml
+         Java Config(@Configuration)のクラスは、applicationContext.xml内のbeanタグで指定。
+         参照
+           XMLとJava Configの併用について
+             http://docs.spring.io/spring/docs/4.0.0.RELEASE/spring-framework-reference/htmlsingle/#beans-java-combining
+             XML-centric use of @Configuration classes
+
+         Java Configのみの場合に発生した問題
+           @EnableLoadTimeWeavingを使い、LoadTimeWeaverを有効にした場合、
+           LoadTimeWeaverがClassLoaderにセットされるより前にBean(@Componentを付けたもの)のクラスが読み込まれてしまうため、
+           そのBeanがLoadTimeWeaverにより処理されない。
+           参照
+             同様の事例
+               http://forum.spring.io/forum/spring-projects/aop/123993-enableloadtimeweaving-is-not-working-but-context-load-time-weaver-is-worked
+    -->
+    <!-- 以下は、Java Configを主とする場合に必要。
+    <context-param>
+        <param-name>contextClass</param-name>
+        <param-value>
+            org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+        </param-value>
+    </context-param>
+
+    @Configuration を付けた、Java Config用の(設定用の)のクラスを指定 
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>samplepkg.MySpringConfiguration</param-value>
+    </context-param>
+    -->
+    <!-- XMLによる設定で、デフォルトとは異なるファイルを設定ファイルとして使いたい場合に指定。-->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:/applicationContext.xml,classpath:/webApplicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <!-- @Scopeでrequestまたはsessionスコープを指定する場合には次の記述が必要。
+         参照
+           http://docs.spring.io/spring/docs/4.0.0.RELEASE/spring-framework-reference/htmlsingle/#beans-factory-scopes-other-web-configuration
+    -->
+    <!--
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+    -->
+    <!-- Servlet -->
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>faces/index.xhtml</welcome-file>
+    </welcome-file-list>
+</web-app>
