@@ -44,6 +44,15 @@ public class EntityLifecycleTest {
         return foo;
     }
 
+    private FooEntity makeRemovedFoo(String name) {
+        FooEntity foo = new FooEntity(name);
+        em.persist(foo);
+        em.flush();
+        em.remove(foo);
+        assertThat(em.contains(foo), is(false));
+        return foo;
+    }
+
     private BarEntity makeDetachedBar(Integer id, String name) {
         BarEntity bar = new BarEntity(id, name);
         em.persist(bar);
@@ -53,6 +62,7 @@ public class EntityLifecycleTest {
         assertThat(em.contains(bar), is(false));
         return bar;
     }
+    
     
     /*
      * @GeneratedValueなidを持つインスタンスを新規作成し、idをセットしないまま、操作を適用
@@ -427,5 +437,64 @@ public class EntityLifecycleTest {
         BarEntity mergedBar = em.merge(bar);
         assertThat(em.contains(bar), is(false));
         assertThat(em.contains(mergedBar), is(true));
+    }
+
+    /*
+     * removed なインスタンスに、操作を適用
+     */    
+    
+    @Test
+    public void removedなインスタンスをpersist() {
+        FooEntity foo = makeRemovedFoo("テスト");
+        Integer removedId = foo.getId();
+        
+        em.persist(foo);
+        assertThat(em.contains(foo), is(true));
+        
+        assertThat(foo.getId(), is(removedId));
+    }
+
+    @Test
+    public void removedなインスタンスをpersist_事前にflush() {
+        FooEntity foo = makeRemovedFoo("テスト");
+        Integer removedId = foo.getId();
+        
+        em.flush();
+        try {
+            em.persist(foo);
+        } catch (PersistenceException e) {
+            // javax.persistence.PersistenceException: org.hibernate.PersistentObjectException: detached entity passed to persist: hibernatestudy.domain.FooEntity
+            return;
+        }
+        fail();
+    }
+
+    @Test
+    public void removedなインスタンスをmerge() {
+        FooEntity foo = makeRemovedFoo("テスト");
+        Integer removedId = foo.getId();
+        
+        try {
+            em.merge(foo);
+        } catch (IllegalArgumentException e) {
+            // java.lang.IllegalArgumentException: org.hibernate.ObjectDeletedException: deleted instance passed to merge: [hibernatestudy.domain.FooEntity#<null>]
+            return;
+        }
+        fail();
+    }
+    
+    @Test
+    public void removedなインスタンスをmerge_事前にflush() {
+        FooEntity foo = makeRemovedFoo("テスト");
+        Integer removedId = foo.getId();
+
+        em.flush();
+        FooEntity mergedFoo = em.merge(foo);
+        
+        assertThat(em.contains(foo), is(false));
+        assertThat(em.contains(mergedFoo), is(true));
+        assertThat(mergedFoo.getId(), is(not(foo.getId())));
+            // 新しいエンティティが追加されるが、 @GeneratedValueなので、idは書き換えられる。
+        
     }
 }
