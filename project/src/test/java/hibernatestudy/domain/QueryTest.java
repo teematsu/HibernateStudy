@@ -1,5 +1,6 @@
 package hibernatestudy.domain;
 
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -37,4 +38,17 @@ public class QueryTest {
         query.getResultList();
     }
 
+    @Test
+    public void removedなentityをパラメータとしてクエリ() {
+        Child child = new Child("ひろし", 10);
+        em.persist(child);
+        em.flush();
+        em.remove(child);
+        
+        TypedQuery<Child> query = em.createQuery("SELECT c FROM Child c WHERE c = :child", Child.class);
+        query.setParameter("child", child);
+        
+        List<Child> actual = query.getResultList();
+        assertThat(actual.size(), is(0));
+    }
 }
