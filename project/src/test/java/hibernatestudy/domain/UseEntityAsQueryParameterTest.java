@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"classpath:/applicationContext.xml", "classpath:/testApplicationContext.xml"})
 @Transactional
-public class QueryTest {
+public class UseEntityAsQueryParameterTest {
     @PersistenceContext
     private EntityManager em;
 
@@ -25,7 +25,12 @@ public class QueryTest {
         TypedQuery<Child> query = em.createQuery("SELECT c FROM Child c WHERE c = :child", Child.class);
         query.setParameter("child", child);
         
-        query.getResultList();
+        try {
+            query.getResultList();
+        } catch (IllegalStateException e) {
+            return;
+        }
+        fail();
     }
 
     @Test
@@ -36,6 +41,19 @@ public class QueryTest {
         query.setParameter("child", child);
         
         query.getResultList();
+    }
+
+    @Test
+    public void managedなentityをパラメータとしてクエリ() {
+        Child child = new Child("ひろし", 10);
+        em.persist(child);
+        assertThat(em.contains(child), is(true));
+        
+        TypedQuery<Child> query = em.createQuery("SELECT c FROM Child c WHERE c = :child", Child.class);
+        query.setParameter("child", child);
+        
+        List<Child> actual = query.getResultList();
+        assertThat(actual.size(), is(1));
     }
 
     @Test
@@ -50,5 +68,21 @@ public class QueryTest {
         
         List<Child> actual = query.getResultList();
         assertThat(actual.size(), is(0));
+    }
+
+    @Test
+    public void detachedなentityをパラメータとしてクエリ() {
+        Child child = new Child("ひろし", 10);
+        em.persist(child);
+        em.flush();
+        assertThat(em.contains(child), is(true));
+        em.detach(child);
+        assertThat(em.contains(child), is(false));
+        
+        TypedQuery<Child> query = em.createQuery("SELECT c FROM Child c WHERE c = :child", Child.class);
+        query.setParameter("child", child);
+        
+        List<Child> actual = query.getResultList();
+        assertThat(actual.size(), is(1));
     }
 }
