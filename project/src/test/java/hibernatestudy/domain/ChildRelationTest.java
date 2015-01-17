@@ -91,7 +91,7 @@ public class ChildRelationTest {
         // 子はもうmanagedではない。
         assertThat(em.contains(child), is(false));
 
-        em.flush();
+        //em.flush(); // flushすると、子はdetachedになり、次のpersistで例外が出る。
         
         // newな親にremovedな子を追加
         Parent parent = new Parent("たろう");
