@@ -11,6 +11,13 @@
           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
 ">
     
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.postgresql.Driver" />
+        <property name="url" value="jdbc:postgresql://localhost:5432/hibernatestudy_test_db" />
+        <property name="username" value="pgsql" />
+        <property name="password" value="" />
+    </bean>
+    
     <!-- JPAの設定  -->
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <!-- persistence-unitのnameを指定。指定省略時は"default" -->
@@ -24,13 +31,7 @@
         <!-- persistence.xmlの場所 -->
         <!--<property name="persistenceXmlLocation" value="classpath:/META-INF/persistence.xml" />-->
         
-        <property name="dataSource">
-            <bean class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-                <property name="driverClassName" value="org.postgresql.Driver" />
-                <property name="url" value="jdbc:postgresql://localhost:5432/hibernatestudy_test_db" />
-                <property name="username" value="pgsql" />
-                <property name="password" value="" />
-            </bean>
+        <property name="dataSource" ref="dataSource">
         </property> 
         <property name="jpaVendorAdapter">
             <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
