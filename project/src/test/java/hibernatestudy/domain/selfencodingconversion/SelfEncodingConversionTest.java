@@ -29,7 +29,7 @@ public class SelfEncodingConversionTest {
     private DataSource dataSource;
 
     @Test
-    public void testSomeMethod() {
+    public void エンティティ読み出し() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.update("INSERT INTO book(id, title, price) VALUES(1, 'あいうえお', 1000)");
 
@@ -40,6 +40,7 @@ public class SelfEncodingConversionTest {
         
         Book actual = bookRepo.findById(1L);
         assertThat(actual.getTitle(), is("あいうえお"));
+        assertThat(actual.getPrice(), is(1000));
     }
     
 }
